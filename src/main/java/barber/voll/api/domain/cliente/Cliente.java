@@ -1,44 +1,44 @@
-package barber.voll.api.barbeiro;
+package barber.voll.api.domain.cliente;
 
-import barber.voll.api.endereco.Endereco;
+import barber.voll.api.domain.endereco.Endereco;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "barbeiros")
-@Entity(name = "Barbeiro")
+@Table(name = "clientes")
+@Entity(name = "Cliente")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Barbeiro {
+public class Cliente {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
     private String email;
+
     private String telefone;
 
-    @Enumerated(EnumType.STRING)
-    private Especialidade especialidade;
+    private String cpf;
 
     @Embedded
     private Endereco endereco;
 
     private Boolean ativo;
 
-    public Barbeiro(DadosCadastroBarbeiro dados) {
+    public Cliente(DadosCadastroCliente dados) {
         this.ativo = true;
         this.nome = dados.nome();
         this.email = dados.email();
         this.telefone = dados.telefone();
-        this.especialidade = dados.especialidade();
+        this.cpf = dados.cpf();
         this.endereco = new Endereco(dados.endereco());
     }
 
-    public void atualizarInformacoes(DadosAtualizacaoBarbeiro dados) {
+    public void atualizarInformacoes(DadosAtualizacaoCliente dados) {
         if (dados.nome() != null) {
             this.nome = dados.nome();
         }
@@ -48,9 +48,11 @@ public class Barbeiro {
         if (dados.endereco() != null) {
             this.endereco.atualizarInformacoes(dados.endereco());
         }
+
     }
 
     public void excluir() {
         this.ativo = false;
     }
+
 }

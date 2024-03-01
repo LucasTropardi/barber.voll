@@ -1,6 +1,6 @@
-package barber.voll.api.barbeiro;
+package barber.voll.api.domain.barbeiro;
 
-import barber.voll.api.endereco.DadosEndereco;
+import barber.voll.api.domain.endereco.DadosEndereco;
 import jakarta.validation.constraints.NotNull;
 
 public record DadosAtualizacaoBarbeiro(

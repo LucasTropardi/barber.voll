@@ -1,15 +1,18 @@
 package barber.voll.api.controller;
 
-import barber.voll.api.barbeiro.*;
+import barber.voll.api.domain.barbeiro.*;
+import barber.voll.api.domain.barbeiro.Barbeiro;
+import barber.voll.api.domain.barbeiro.BarbeiroRepository;
+import barber.voll.api.domain.barbeiro.DadosListagemBarbeiro;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/barbeiros")
@@ -20,28 +23,41 @@ public class BarbeiroController {
 
     @PostMapping
     @Transactional
-    public void cadastrar(@RequestBody @Valid DadosCadastroBarbeiro dados) {
-
-        repository.save(new Barbeiro(dados));
+    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroBarbeiro dados, UriComponentsBuilder uriBuilder) {
+        var barbeiro = new Barbeiro(dados);
+        repository.save(barbeiro);
+        var uri = uriBuilder.path("/barbeiros/{id}").buildAndExpand(barbeiro.getId()).toUri();
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoBarbeiro(barbeiro));
     }
 
     @GetMapping
-    public Page<DadosListagemBarbeiro> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
-        return repository.findAllByAtivoTrue(paginacao).map(DadosListagemBarbeiro::new);
+    public ResponseEntity<Page<DadosListagemBarbeiro>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemBarbeiro::new);
+        return ResponseEntity.ok(page);
     }
 
     @PutMapping
     @Transactional
-    public void atualizar(@RequestBody @Valid DadosAtualizacaoBarbeiro dados) {
+    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoBarbeiro dados) {
         var barbeiro = repository.getReferenceById(dados.id());
         barbeiro.atualizarInformacoes(dados);
+
+        return ResponseEntity.ok(new DadosDetalhamentoBarbeiro(barbeiro));
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public void excluir(@PathVariable Long id){
+    public ResponseEntity excluir(@PathVariable Long id){
         var barbeiro = repository.getReferenceById(id);
         barbeiro.excluir();
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity detalhar(@PathVariable Long id){
+        var barbeiro = repository.getReferenceById(id);
+        return ResponseEntity.ok(new DadosDetalhamentoBarbeiro(barbeiro));
     }
 }
 
